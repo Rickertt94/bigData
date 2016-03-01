@@ -1,4 +1,4 @@
-package nl.hu.hadoop.wordcount;
+package main.java.nl.hu.hadoop.wordcount;
 
 import java.io.IOException;
 import org.apache.hadoop.fs.Path;
@@ -30,10 +30,37 @@ public class WordCount {
 
 class WordCountMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 
+	public int getDivisorSum(int n){
+		int root = (int) Math.sqrt(n);
+		int sum = 1;
+		int addFornumber = 1;
+		int beginFornumber = 2;
+		
+		if(n % 2 != 0){
+			addFornumber = 2;
+			beginFornumber = 3;
+		}
+		
+		for(int i = beginFornumber; i <= root; i = i + addFornumber){
+			if(n%i==0){
+				sum += i;
+				int d = n/i;
+				if(d != i) {
+					sum += d;
+				}
+			}
+		}
+		return sum;
+	}
 	public void map(LongWritable Key, Text value, Context context) throws IOException, InterruptedException {
-		String[] tokens = value.toString().split("\\s");
-		for (String s : tokens) {
-			context.write(new Text(s), new IntWritable(1));
+		int max = 1000000;//Integer.parseInt(value.toString());
+		
+		for (int i = 1; i < max; i++){
+			int a = getDivisorSum(i);
+			int b = getDivisorSum(a);
+			if((i == b && a != b) && i > a){
+				context.write(new Text(Integer.toString(i)), new IntWritable(a));
+			}
 		}
 	}
 }
@@ -47,3 +74,5 @@ class WordCountReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 		context.write(key, new IntWritable(sum));
 	}
 }
+
+
